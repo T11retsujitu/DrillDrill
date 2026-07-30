@@ -1,30 +1,46 @@
 #include "histogram.hpp"
 
-#include <stdexcept>
+// 参照実装（solutions ブランチ用）。dev ブランチではスタブに差し替える。
 
-// TODO(you): 3 つの関数を実装してください（sections/03_histogram_bitdepth/README.md 参照）。
-
-// 要件: 256 ビンの度数分布。総和が画素数に一致すること。src は CV_8U。
 std::vector<int> compute_histogram(const cv::Mat& src) {
-  (void)src;
-  throw std::logic_error(
-      "TODO(you): compute_histogram を実装してください");
+  CV_Assert(src.type() == CV_8U);
+  std::vector<int> hist(256, 0);
+  for (int y = 0; y < src.rows; ++y) {
+    const uchar* p = src.ptr<uchar>(y);
+    for (int x = 0; x < src.cols; ++x) {
+      ++hist[p[x]];
+    }
+  }
+  return hist;
 }
 
-// 要件: [in_min,in_max] → [0,255] の線形写像で CV_8U 化。区間外は飽和。src は変更しない。
-//   ヒント: まず convertTo で CV_64F 化すると、どのビット深度でも同じループで書ける。
 cv::Mat rescale_to_8u(const cv::Mat& src, double in_min, double in_max) {
-  (void)src;
-  (void)in_min;
-  (void)in_max;
-  throw std::logic_error(
-      "TODO(you): rescale_to_8u を実装してください");
+  CV_Assert(src.channels() == 1);
+  CV_Assert(in_max > in_min);
+
+  // どのビット深度でも同じコードで扱えるよう、まず double に変換する。
+  cv::Mat f;
+  src.convertTo(f, CV_64F);
+
+  cv::Mat dst(src.rows, src.cols, CV_8U);
+  const double scale = 255.0 / (in_max - in_min);
+  for (int y = 0; y < f.rows; ++y) {
+    const double* s = f.ptr<double>(y);
+    uchar* d = dst.ptr<uchar>(y);
+    for (int x = 0; x < f.cols; ++x) {
+      // saturate_cast が四捨五入と 0..255 への飽和を行う。
+      d[x] = cv::saturate_cast<uchar>((s[x] - in_min) * scale);
+    }
+  }
+  return dst;
 }
 
-// 要件: min-max ストレッチ。一様画像（max==min）は clone を返す。
-//   ヒント: cv::minMaxLoc で最小・最大を求め、rescale_to_8u を再利用する。
 cv::Mat stretch_contrast(const cv::Mat& src) {
-  (void)src;
-  throw std::logic_error(
-      "TODO(you): stretch_contrast を実装してください");
+  CV_Assert(src.type() == CV_8U);
+  double mn = 0.0, mx = 0.0;
+  cv::minMaxLoc(src, &mn, &mx);
+  if (mx <= mn) {
+    return src.clone();  // 一様な画像は伸長しようがない。
+  }
+  return rescale_to_8u(src, mn, mx);
 }

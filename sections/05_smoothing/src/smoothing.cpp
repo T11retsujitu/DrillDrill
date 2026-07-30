@@ -2,33 +2,41 @@
 
 #include "convolve.hpp"
 
-#include <stdexcept>
+#include <cmath>
 
-// TODO(you): 4 つの関数を実装してください（sections/05_smoothing/README.md 参照）。
-//   box_blur / gaussian_blur は「カーネルを作って セクション 04 の convolve を呼ぶだけ」です。
+// 参照実装（solutions ブランチ用）。dev ブランチではスタブに差し替える。
 
-// 要件: 全要素 1/(ksize*ksize) の CV_32F。ksize は正の奇数。
 cv::Mat make_box_kernel(int ksize) {
-  (void)ksize;
-  throw std::logic_error("TODO(you): make_box_kernel を実装してください");
+  CV_Assert(ksize >= 1 && ksize % 2 == 1);
+  const float w = 1.0f / static_cast<float>(ksize * ksize);
+  return cv::Mat(ksize, ksize, CV_32F, cv::Scalar(w)).clone();
 }
 
-// 要件: w(j,i) ∝ exp(-((i-c)^2+(j-c)^2)/(2 sigma^2))、総和 1 に正規化。
 cv::Mat make_gaussian_kernel(int ksize, double sigma) {
-  (void)ksize;
-  (void)sigma;
-  throw std::logic_error("TODO(you): make_gaussian_kernel を実装してください");
+  CV_Assert(ksize >= 1 && ksize % 2 == 1);
+  CV_Assert(sigma > 0.0);
+
+  cv::Mat k(ksize, ksize, CV_32F);
+  const int c = ksize / 2;
+  double sum = 0.0;
+  for (int j = 0; j < ksize; ++j) {
+    for (int i = 0; i < ksize; ++i) {
+      const double dy = j - c;
+      const double dx = i - c;
+      const double w = std::exp(-(dx * dx + dy * dy) / (2.0 * sigma * sigma));
+      k.at<float>(j, i) = static_cast<float>(w);
+      sum += w;
+    }
+  }
+  // 総和 1 に正規化する（しないと画像全体が明るく/暗くなる）。
+  k /= static_cast<float>(sum);
+  return k;
 }
 
 cv::Mat box_blur(const cv::Mat& src, int ksize) {
-  (void)src;
-  (void)ksize;
-  throw std::logic_error("TODO(you): box_blur を実装してください");
+  return convolve(src, make_box_kernel(ksize));
 }
 
 cv::Mat gaussian_blur(const cv::Mat& src, int ksize, double sigma) {
-  (void)src;
-  (void)ksize;
-  (void)sigma;
-  throw std::logic_error("TODO(you): gaussian_blur を実装してください");
+  return convolve(src, make_gaussian_kernel(ksize, sigma));
 }
