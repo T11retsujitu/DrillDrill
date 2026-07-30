@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain and OpenCV
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake libopencv-dev
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+
+      # ドリル・スタブを含め、リポジトリ全体がコンパイルできることを確認する。
+      - name: Build (all targets, incl. drill stubs)
+        run: cmake --build build -j
+
+      # 共通ライブラリの検証のみ実行する。
+      # ドリルテスト(-L drill)は「学習者が実装するまで赤」なので CI では走らせない。
+      - name: Test (common library only)
+        run: ctest --test-dir build -L ci --output-on-failure
+
+      # 合成データ生成 CLI が動くことを確認する（機密画像は一切使わない）。
+      - name: Smoke-test dataset generator
+        run: |
+          ./build/tools/generate_dataset /tmp/dd_generated
+          ls -la /tmp/dd_generated

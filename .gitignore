@@ -1,0 +1,15 @@
+# ビルド成果物
+/build/
+build/
+*.o
+*.obj
+*.exe
+
+# 生成データ（合成画像は generate_dataset で都度生成する）
+/data/generated/
+data/generated/
+
+# エディタ / OS
+.vscode/settings.json
+.DS_Store
+*.swp
