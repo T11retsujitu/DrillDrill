@@ -58,8 +58,8 @@ PSNR 改善が検証される。
   本当に「一番良い」か？ PSNR と見た目の印象がずれる例を探す。
 
 ## 10. OpenCV 実装との比較
-- `box_blur` ↔ `cv::blur`、`gaussian_blur` ↔ `cv::GaussianBlur`（`BORDER_REPLICATE` 指定）。
-  結果はほぼ一致するはず（テストで確認済み）。実行時間は大差がつく。
+- `box_blur` ↔ `cv::filter2D`(box カーネル) / `cv::blur`、`gaussian_blur` ↔ `cv::GaussianBlur`
+  （いずれも `BORDER_REPLICATE` 指定）。どちらもテストで数値一致を確認する。実行時間は大差がつく。
 - `cv::getGaussianKernel(ksize, sigma)` は **1 次元**カーネルを返す。なぜ 1 次元でよいのか
   （分離可能性）を調べる。
 

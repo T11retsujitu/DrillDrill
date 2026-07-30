@@ -28,7 +28,8 @@ cv::Mat rescale_to_8u(const cv::Mat& src, double in_min, double in_max) {
     const double* s = f.ptr<double>(y);
     uchar* d = dst.ptr<uchar>(y);
     for (int x = 0; x < f.cols; ++x) {
-      // saturate_cast が四捨五入と 0..255 への飽和を行う。
+      // saturate_cast が最近接丸め（.5 ちょうどは偶数側へ丸める cvRound 方式）と
+      // 0..255 への飽和を一度に行う。
       d[x] = cv::saturate_cast<uchar>((s[x] - in_min) * scale);
     }
   }
