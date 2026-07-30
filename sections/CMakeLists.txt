@@ -2,3 +2,6 @@
 add_subdirectory(00_setup)
 add_subdirectory(01_image_memory)
 add_subdirectory(02_copy_reference_raii)
+add_subdirectory(03_histogram_bitdepth)
+add_subdirectory(04_convolution)
+add_subdirectory(05_smoothing)
