@@ -39,6 +39,8 @@ int main() {
   DD_CHECK_NEAR(fb_mx, 100.0, 1e-3);
   DD_CHECK_NEAR(fg_mn, 100.0, 1e-3);
   DD_CHECK_NEAR(fg_mx, 100.0, 1e-3);
+  DD_CHECK_EQ(fb.type(), CV_32F);  // 出力型の契約（hpp 参照）
+  DD_CHECK_EQ(fg.type(), CV_32F);
 
   // --- cv::GaussianBlur(BORDER_REPLICATE) と一致すること ---
   auto pat = dd::synth::make_line_space(64, 64, 16.0, 0.5, 1.0);
@@ -49,6 +51,17 @@ int main() {
                    cv::BORDER_REPLICATE);
   double max_diff = 0.0;
   cv::minMaxLoc(cv::abs(mine - theirs), nullptr, &max_diff);
+  DD_CHECK_NEAR(max_diff, 0.0, 1e-2);
+
+  // --- box_blur も非一様データで検証: filter2D(box, BORDER_REPLICATE) と一致 ---
+  //     （cv::blur は 8U 入力だと 8U を返すので、型を揃えられる filter2D と照合する）
+  cv::Mat mine_b = box_blur(noisy, 5);
+  DD_CHECK_EQ(mine_b.type(), CV_32F);
+  cv::Mat theirs_b;
+  cv::filter2D(noisy, theirs_b, CV_32F,
+               cv::Mat(5, 5, CV_32F, cv::Scalar(1.0f / 25.0f)),
+               cv::Point(-1, -1), 0, cv::BORDER_REPLICATE);
+  cv::minMaxLoc(cv::abs(mine_b - theirs_b), nullptr, &max_diff);
   DD_CHECK_NEAR(max_diff, 0.0, 1e-2);
 
   // --- タスク指向の確認: 平滑化で PSNR が改善すること ---

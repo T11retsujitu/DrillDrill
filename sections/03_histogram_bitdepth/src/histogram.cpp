@@ -12,6 +12,7 @@ std::vector<int> compute_histogram(const cv::Mat& src) {
 }
 
 // 要件: [in_min,in_max] → [0,255] の線形写像で CV_8U 化。区間外は飽和。src は変更しない。
+//   小数は最近接の整数に丸める（cv::saturate_cast<uchar> が丸めと飽和を一度に行う）。
 //   ヒント: まず convertTo で CV_64F 化すると、どのビット深度でも同じループで書ける。
 cv::Mat rescale_to_8u(const cv::Mat& src, double in_min, double in_max) {
   (void)src;

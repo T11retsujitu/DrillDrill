@@ -34,8 +34,9 @@
 
 1. `compute_histogram(src)` — 256 ビンの度数分布。総和が画素数になること。
 2. `rescale_to_8u(src, in_min, in_max)` — 任意深度の 1ch 画像を `[in_min,in_max]→[0,255]` の
-   線形写像で CV_8U 化。区間外は飽和。ヒント: まず `convertTo` で double 化すると
-   どの深度でも同じループで書ける。
+   線形写像で CV_8U 化。区間外は飽和。小数は最近接の整数に丸める
+   （`cv::saturate_cast<uchar>` が丸めと飽和を一度に行う）。ヒント: まず `convertTo` で
+   double 化すると、どの深度でも同じループで書ける。
 3. `stretch_contrast(src)` — 8bit の min-max ストレッチ。`cv::minMaxLoc` で最小・最大を求め、
    `rescale_to_8u` を**再利用**する。一様画像は `clone` を返す（ゼロ除算を避ける）。
 
@@ -62,6 +63,8 @@ ctest --test-dir build -R drill.sec03 --output-on-failure
 - `compute_histogram` ↔ `cv::calcHist`。使い方の複雑さと汎用性のトレードオフを見る。
 - `stretch_contrast` ↔ `cv::normalize(src, dst, 0, 255, cv::NORM_MINMAX)` + `convertTo(CV_8U)`。
   自作と結果を比較し、**丸めで 1 だけ違う画素**が出るか調べてみる（出たら理由を考える）。
+  ヒント: OpenCV の丸め（`cvRound`）は「.5 ちょうどを偶数側へ」丸める方式で、
+  `std::round` や `(int)(x + 0.5)`（.5 を常に切り上げ）とは **.5 境界でだけ** 1 ずれる。
 
 ## 11. 考察問題
 - コントラスト伸長で「見やすくなった」画像は、情報が増えたのか？ ヒストグラムの歯抜けは

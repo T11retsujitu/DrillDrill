@@ -24,11 +24,24 @@ int main() {
   DD_CHECK_EQ((int)v.at<uchar>(0, 1), 128);  // 32768*255/65535 = 127.502 → 128
   DD_CHECK_EQ((int)v.at<uchar>(0, 2), 255);
 
-  // 区間外は飽和する（in_min より小さい値 → 0）。
-  cv::Mat m2 = (cv::Mat_<ushort>(1, 2) << 50, 300);
+  // 区間外は飽和する（in_min より小さい値 → 0、in_max より大きい値 → 255）。
+  cv::Mat m2 = (cv::Mat_<ushort>(1, 3) << 50, 400, 300);
   cv::Mat v2 = rescale_to_8u(m2, 100, 300);
-  DD_CHECK_EQ((int)v2.at<uchar>(0, 0), 0);
-  DD_CHECK_EQ((int)v2.at<uchar>(0, 1), 255);
+  DD_CHECK_EQ((int)v2.at<uchar>(0, 0), 0);    // 50 < in_min
+  DD_CHECK_EQ((int)v2.at<uchar>(0, 1), 255);  // 400 > in_max（ラップさせない）
+  DD_CHECK_EQ((int)v2.at<uchar>(0, 2), 255);  // ちょうど in_max
+
+  // 「任意ビット深度」の仕様: CV_8U / CV_32F 入力でも正しく動くこと。
+  cv::Mat m8 = (cv::Mat_<uchar>(1, 3) << 0, 128, 255);
+  cv::Mat v8 = rescale_to_8u(m8, 0, 255);
+  DD_CHECK_EQ((int)v8.at<uchar>(0, 0), 0);
+  DD_CHECK_EQ((int)v8.at<uchar>(0, 1), 128);
+  DD_CHECK_EQ((int)v8.at<uchar>(0, 2), 255);
+  cv::Mat mf = (cv::Mat_<float>(1, 3) << 0.0f, 0.5f, 1.0f);
+  cv::Mat vf = rescale_to_8u(mf, 0.0, 1.0);
+  DD_CHECK_EQ((int)vf.at<uchar>(0, 0), 0);
+  DD_CHECK_EQ((int)vf.at<uchar>(0, 1), 128);  // 0.5*255 = 127.5 → 128
+  DD_CHECK_EQ((int)vf.at<uchar>(0, 2), 255);
 
   // --- stretch_contrast ---
   cv::Mat s = (cv::Mat_<uchar>(1, 3) << 40, 90, 240);
