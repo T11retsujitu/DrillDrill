@@ -18,7 +18,7 @@
 | 4 | 畳み込みエンジン | 多重ループ, float 中間表現(CV_32F), 境界外回避(clamp) | 畳み込み原理, 境界処理 | 汎用 convolve | filter2D 比較 | 5h | 3 |
 | 5 | 平滑化フィルタ | カーネル生成, 分離可能性 | 平均化, ガウシアン | 平均/ガウシアン | blur/GaussianBlur 比較 | 4h | 4 |
 | 6 | 非線形・エッジ保存平滑化 | ソート/選択, 計算量 | メディアン, エッジ保存, 情報損失 | メディアン | bilateral/NLM（比較対象） | 4h | 5 |
-| 7 | 微分フィルタとエッジ | 符号付き型, float 可視化 | 差分, Sobel, Laplacian, エッジ | 差分/Sobel/Laplacian | Sobel/Laplacian 比較 | 4h | 4 |
+| 7 | 微分フィルタとエッジ | 符号付き型, float 可視化 | 差分, Sobel, Laplacian, エッジ | Sobel/勾配強度/Laplacian | Sobel/Laplacian 比較 | 4h | 4,5 |
 | 8 | 二値化とモルフォロジー | ネスト処理, 構造要素表現 | 二値化, 大津, モルフォロジー | しきい値/大津/膨張収縮 | threshold/morphologyEx 比較 | 4h | 3,5 |
 | 9 | フーリエ変換と周期ノイズ | complex データ, 可視化 | FFT 観察, 周期ノイズ低減 | ノッチマスク設計 | dft/idft（変換本体） | 4h | 5 |
 | 10 | ノイズモデルと合成 | 乱数, 型/範囲管理 | Poisson/Gaussian/インパルス, 信号依存性 | ノイズ加算の理解 | RNG 補助 | 3h | 3 |

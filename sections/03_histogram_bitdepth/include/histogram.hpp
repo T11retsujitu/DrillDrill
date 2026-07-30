@@ -12,9 +12,10 @@ std::vector<int> compute_histogram(const cv::Mat& src);
 // 8bit(CV_8U) に変換して返す。区間外の値は 0 / 255 に飽和させる。
 //   例: 16bit 画像なら in_min=0, in_max=65535 で「全レンジ表示」になる。
 //   要件: in_max > in_min。src は変更しない。
-//   丸め: 小数は最近接の整数に丸める（cv::saturate_cast<uchar> の丸めと同じ。
-//         なお .5 ちょうどは偶数側に丸む cvRound 方式で、いわゆる四捨五入とは
-//         タイの扱いだけ異なる）。
+//   丸め: 小数は最近接の整数に丸める。cv::saturate_cast<uchar> を使うのが簡単。
+//         （テストは .5 ちょうどのタイを踏まない値だけを検証するので、タイの
+//         扱い——OpenCV の cvRound は偶数側へ丸める——はどちらでもよい。
+//         この違いの詳細は README の §10 で扱う。）
 cv::Mat rescale_to_8u(const cv::Mat& src, double in_min, double in_max);
 
 // 8bit 画像の線形コントラスト伸長（min-max ストレッチ）。

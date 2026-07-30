@@ -33,6 +33,12 @@ int main() {
   DD_CHECK(mine_t > 60);
   DD_CHECK(mine_t < 180);
 
+  // タイブレーク: 値が {50, 200} だけの画像では t=50..199 のクラス間分散が
+  // すべて同値になる。仕様（と cv::THRESH_OTSU）は最小の t=50 を返す。
+  cv::Mat two(64, 64, CV_8U, cv::Scalar(50));
+  two.rowRange(0, 32).setTo(200);
+  DD_CHECK_EQ(otsu_threshold(two), 50);
+
   // --- erode3 / dilate3: 孤立画素での基本動作 ---
   cv::Mat single(7, 7, CV_8U, cv::Scalar(0));
   single.at<uchar>(3, 3) = 255;
@@ -40,7 +46,10 @@ int main() {
   double mn, mx;
   cv::minMaxLoc(er, &mn, &mx);
   DD_CHECK_EQ((int)mx, 0);  // 孤立白画素は収縮で消える
+  cv::Mat single_before = single.clone();
   cv::Mat di = dilate3(single);
+  // 入力を変更しないこと。
+  DD_CHECK_EQ(cv::countNonZero(single != single_before), 0);
   DD_CHECK_EQ(cv::countNonZero(di), 9);  // 3x3 に太る
   DD_CHECK_EQ((int)di.at<uchar>(2, 2), 255);
   DD_CHECK_EQ((int)di.at<uchar>(4, 4), 255);

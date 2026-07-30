@@ -35,8 +35,10 @@ int main(int argc, char** argv) {
         gradient_magnitude(sobel_x(smoothed), sobel_y(smoothed));
     dd::save_view(dir + "/sec07_mag_after_smooth.png", mag_smoothed);
 
-    // 平坦領域（ライン中央付近の列）での勾配強度の平均 = ノイズ由来の偽応答。
-    cv::Rect flat_roi(16, 0, 16, noisy.rows);  // 1 本目のライン内部
+    // 平坦領域での勾配強度の平均 = ノイズ由来の偽応答。
+    // ROI はエッジ（x=31.5 付近）の裾が届かない列だけに限定する。
+    // エッジを含めてしまうと「本物のエッジ応答」が混ざり、数値の意味が崩れる。
+    cv::Rect flat_roi(4, 0, 20, noisy.rows);  // 1 本目のライン内部 x=4..23
     const double fake_raw = cv::mean(mag(flat_roi))[0];
     const double fake_smooth = cv::mean(mag_smoothed(flat_roi))[0];
     std::cout << "平坦部の平均勾配強度（小さいほどノイズに強い）\n"

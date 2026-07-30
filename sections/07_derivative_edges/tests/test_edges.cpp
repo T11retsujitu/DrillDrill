@@ -33,6 +33,11 @@ int main() {
   cv::minMaxLoc(cv::abs(sobel_y(step)), &mn, &mx);
   DD_CHECK_NEAR(mx, 0.0, 1e-4);
 
+  // 入力を変更しないこと。
+  cv::Mat step_before = step.clone();
+  (void)sobel_x(step);
+  DD_CHECK_EQ(cv::countNonZero(step != step_before), 0);
+
   // 明→暗にすると符号が反転する。
   cv::Mat step_rev(8, 8, CV_8U, cv::Scalar(100));
   step_rev.colRange(4, 8).setTo(0);
@@ -71,7 +76,9 @@ int main() {
   cv::Mat clean_sharp =
       dd::synth::make_line_space(64, 64, 16.0, 0.5, /*edge_blur=*/0.0).clean;
   cv::Mat mag2 = gradient_magnitude(sobel_x(clean_sharp), sobel_y(clean_sharp));
-  // 1 本目の正解エッジは x=8（synth の仕様: 立ち上がり位置）。
+  // 1 本目の正解エッジは x=8。synth の仕様では x=0..7 が high、x=8..15 が low
+  // なので、これは明→暗の「立ち下がり」エッジ（sobel_x は負になる）。
+  // ここでは符号非依存の勾配強度を使うので、ピーク位置の検証には影響しない。
   // 行 32 で x=5..11 の最大値の位置を調べる。
   int peak_x = -1;
   float peak_v = -1.0f;
